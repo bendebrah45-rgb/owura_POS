@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owura-Ent POS System</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="loginScreen" class="login-container">
+    <div class="login-box">
+      <h2>🏪 OWURA-ENT POS</h2>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="loginUsername" placeholder="Enter username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter password">
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="login()">Login</button>
+      <p style="margin-top:10px;font-size:12px;color:#666;"></p>
+    </div>
+  </div>
+
+  <div id="mainApp" class="hidden">
+    <header class="header">
+      <div class="logo">🏪 Owura-Ent POS</div>
+      <div class="user-info">
+        <span id="currentUser"></span>
+        <button class="btn btn-danger" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="layout">
+  <nav class="sidebar">
+    <button class="nav-btn active" onclick="showSection('pos', event)">💰 POS</button>
+    <button class="nav-btn" onclick="showSection('sales', event)">📊 Sales</button>
+    <button class="nav-btn" onclick="showSection('debtors', event)">💳 Debtors</button>
+    <button class="nav-btn" onclick="showSection('inventory', event)">📦 Inventory</button>
+    <button class="nav-btn" onclick="showSection('reports', event)">📈 Reports</button>
+    <button class="nav-btn" onclick="showSection('database', event)">💾 Database</button>
+  </nav>
+
+    <main class="content-area">
+      <section id="pos" class="section active">
+  <h2>💰 Point of Sale</h2>
+
+  <div class="form-group">
+    <label>Search Product</label>
+    <input type="text" id="productSearch" placeholder="Search product..." oninput="filterProductDropdown()">
+
+    <label>Select Product</label>
+    <select id="productSelect" onchange="updateProductInfo()">
+      <option value="">-- Select Product --</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Quantity</label>
+    <input type="number" id="quantity" value="1" min="1">
+  </div>
+  <div class="form-group">
+    <label>Unit Price</label>
+    <input type="number" id="unitPrice" readonly>
+  </div>
+
+  <button type="button" class="btn btn-success" onclick="addToCart()">Add to Cart</button>
+
+  <h3>🛒 Cart</h3>
+  <div id="cartItems"></div>
+  <div class="cart-total">Total: GH₵ <span id="cartTotal">0.00</span></div>
+
+  <div class="form-group">
+    <label>Customer Name</label>
+    <input type="text" id="customerName">
+  </div>
+  <div class="form-group">
+    <label>Phone</label>
+    <input type="text" id="customerPhone">
+  </div>
+
+  <div class="form-group">
+    <label>Payment Type</label>
+    <select id="paymentType" onchange="toggleCashAmountField()">
+      <option value="cash">Cash</option>
+      <option value="credit">Credit</option>
+    </select>
+  </div>
+
+  <div class="form-group" id="cashAmountGroup" style="display:none;">
+    <label for="cashAmount">Amount Paid</label>
+    <input type="number" id="cashAmount" min="0" placeholder="Enter amount paid" />
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn btn-primary" onclick="processCheckout()">Checkout</button>
+    <button type="button" class="btn btn-danger" onclick="clearCart()">Clear Cart</button>
+  </div>
+</section>
+
+      <section id="sales" class="section">
+  <h2>📊 Sales Records</h2>
+  <div class="table-wrapper">
+    <table class="sales-table">
+      <thead>
+  <tr>
+    <th>Receipt</th>
+    <th>Date</th>
+    <th>Customer</th>
+    <th>Items</th>
+    <th>Total</th>
+    <th>Payment</th>
+    <th>Payment Details</th> <th>Actions</th>
+  </tr>
+      </thead>
+      <tbody id="salesTableBody"></tbody>
+    </table>
+  </div>
+</section>
+
+      <section id="debtors" class="section">
+  <h2>💳 Debtors</h2>
+  <div class="table-wrapper">
+    <table class="debtors-table">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Phone</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="debtorsTableBody"></tbody>
+    </table>
+  </div>
+  <div class="summary-cards">
+    <p>Total Debtors: <span id="totalDebtors">0</span></p>
+    <p>Total Debt: GH₵ <span id="totalDebt">0.00</span></p>
+  </div>
+</section>
+
+      <section id="inventory" class="section">
+  <h2>Product Inventory</h2>
+  
+  <div class="inventory-header">
+    <input type="text" id="inventorySearch" placeholder="Search products..." oninput="filterInventory()" />
+    <button class="btn btn-primary" onclick="showAddProductModal()">+ Add New Product</button>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="inventory-table">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Selling Price</th>
+          <th>Cost Price</th>
+          <th>Stock</th>
+          <th>Stock Limit</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="inventoryTableBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="reports" class="section">
+        <h2>Reports</h2>
+        <p>Today's Sales: GH₵ <span id="todaySales">0.00</span></p>
+        <p>This Month: GH₵ <span id="monthSales">0.00</span></p>
+        <p>Total Revenue: GH₵ <span id="totalRevenue">0.00</span></p>
+        <p>Total Profit: GH₵ <span id="totalProfit">0.00</span></p>
+        <table>
+          <thead><tr><th>Product</th><th>Units</th><th>Revenue</th><th>Cost</th><th>Profit</th></tr></thead>
+          <tbody id="profitTableBody"></tbody>
+          <h3>Daily Sales Chart</h3>
+      <canvas id="dailySalesChart" width="400" height="200"></canvas>
+
+        </table>
+      </section>
+    
+
+
+      <section id="database" class="section">
+        <h2>Database</h2>
+        <button class="btn btn-success" onclick="exportDatabase()">Export</button>
+        <input type="file" id="importFile" accept=".json">
+        <button class="btn btn-primary" onclick="importDatabase()">Import</button>
+        <button class="btn btn-danger" onclick="clearAllData()">Clear All</button>
+        <p>Products: <span id="dbProductCount">0</span></p>
+        <p>Sales: <span id="dbSalesCount">0</span></p>
+        <p>Debtors: <span id="dbDebtorCount">0</span></p>
+        <p>Payments: <span id="dbPaymentCount">0</span></p>
+        <p>Admins: <span id="dbAdminCount">1</span></p>
+      </section>
+    </main>
+  </div>
+
+  <div id="productModal" class="modal hidden">
+  <div class="modal-content">
+    <h3 id="productModalTitle">Add New Product</h3>
+    <div class="form-group">
+      <label>Product Name</label>
+      <input type="text" id="productName" placeholder="e.g. Abena">
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <input type="text" id="productCategory" placeholder="e.g. Rice">
+    </div>
+    <div class="form-group">
+      <label>Selling Price</label>
+      <input type="number" id="sellingPrice" placeholder="₵">
+    </div>
+    <div class="form-group">
+      <label>Cost Price</label>
+      <input type="number" id="costPrice" placeholder="₵">
+    </div>
+    <div class="form-group">
+      <label>Stock Quantity</label>
+      <input type="number" id="stockQuantity" placeholder="e.g. 200"> 
+    </div>
+    <div class="form-group">
+      <label>Stock Limit</label>
+      <input type="number" id="stockLimit" placeholder="e.g. 10 (Low stock alert)">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('productModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Add Product</button>
+    </div>
+  </div>
+</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
